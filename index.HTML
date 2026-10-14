@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Control Financiero</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <style>
+        :root {
+            --primary: #2b6cb0;
+            --success: #2f855a;
+            --danger: #c53030;
+            --background: #f7fafc;
+            --card-bg: #ffffff;
+            --text: #2d3748;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 10px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-top: 10px;
+        }
+
+        .selectors {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        select, input, button {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e0;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover { opacity: 0.9; }
+
+        .btn-delete {
+            background-color: transparent;
+            color: var(--danger);
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px 8px;
+            width: auto;
+        }
+
+        .grid-forms {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .dashboard {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        th { background-color: #edf2f7; color: var(--primary); }
+
+        .ingreso-row { color: var(--success); font-weight: 500; }
+        .gasto-row { color: var(--danger); font-weight: 500; }
+        
+        .pagado { text-decoration: line-through; opacity: 0.5; }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .resumen {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 1em;
+            border-top: 2px solid #edf2f7;
+            padding-top: 15px;
+        }
+
+        dialog {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            padding: 20px;
+            max-width: 90%;
+            width: 360px;
+            text-align: center;
+        }
+        dialog::backdrop { background-color: rgba(0, 0, 0, 0.5); }
+        .dialog-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📅 Control Financiero</h1>
+
+    <div class="selectors">
+        <select id="mesVista" onchange="renderizarMes()" style="width: auto;">
+            <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option>
+            <option value="3">Abril</option><option value="4">Mayo</option><option value="5" selected>Junio</option>
+            <option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option>
+            <option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option>
+        </select>
+    </div>
+
+    <div class="grid-forms">
+        <div class="card">
+            <h3 style="color: var(--success); margin-top:0; font-size: 1.1em;">+ Ingreso / Nómina</h3>
+            <div class="form-group">
+                <input type="text" id="ingresoConcepto" placeholder="Concepto" required>
+                <div class="form-row">
+                    <input type="number" id="ingresoImporte" placeholder="Importe (€)" step="0.01" required>
+                    <select id="ingresoTipo" onchange="toggleFrecuencia('ingreso')">
+                        <option value="recurrente">Fijo (Mes)</option>
+                        <option value="fija">Periódico</option>
+                    </select>
+                </div>
+                <select id="ingresoFrecuencia" disabled>
+                    <option value="1">Mensual</option><option value="2">Bimensual</option><option value="3">Trimestral</option><option value="12">Anual</option>
+                </select>
+                <button onclick="agregarMovimiento('ingreso')" style="background-color: var(--success);">Añadir Ingreso</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="color: var(--danger); margin-top:0; font-size: 1.1em;">- Gasto / Recibo</h3>
+            <div class="form-group">
+                <input type="text" id="gastoConcepto" placeholder="Concepto" required>
+                <div class="form-row">
+                    <input type="number" id="gastoImporte" placeholder="Importe (€)" step="0.01" required>
+                    <select id="gastoTipo" onchange="toggleFrecuencia('gasto')">
+                        <option value="recurrente">Fijo (Mes)</option>
+                        <option value="fija">Periódico</option>
+                    </select>
+                </div>
+                <select id="gastoFrecuencia" disabled>
+                    <option value="1">Mensual</option><option value="2">Bimensual</option><option value="3">Trimestral</option><option value="12">Anual</option>
+                </select>
+                <button onclick="agregarMovimiento('gasto')" style="background-color: var(--danger);">Añadir Gasto</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <h2>Vista de <span id="nombreMesTitulo">Junio</span></h2>
+        <table>
+            <thead>
+                <tr>
+                    <th width="10%">OK</th>
+                    <th width="45%">Concepto</th>
+                    <th width="30%" style="text-align: right;">Importe</th>
+                    <th width="15%" style="text-align: center;">Acción</th>
+                </tr>
+            </thead>
+            <tbody id="tablaMovimientos"></tbody>
+        </table>
+
+        <div class="resumen">
+            <span style="color: var(--success);" id="totalIngresos">Ingresos: 0.00 €</span>
+            <span style="color: var(--danger);" id="totalGastos">Gastos: 0.00 €</span>
+            <span id="balanceNeto">Neto: 0.00 €</span>
+        </div>
+    </div>
+</div>
+
+<dialog id="deleteDialog">
+    <h3 style="margin-top: 0;">¿Cómo deseas borrar este elemento?</h3>
+    <p id="deleteConceptText" style="font-weight: bold; color: var(--primary);"></p>
+    <div class="dialog-buttons">
+        <button onclick="ejecutarBorrado('mes')" style="background-color: #e2e8f0; color: var(--text);">Borrar SOLO en este mes</button>
+        <button onclick="ejecutarBorrado('completo')" style="background-color: var(--danger); color: white;">Borrar del HISTÓRICO</button>
+        <button onclick="cerrarDialogo()" style="background-color: transparent; color: #a0aec0; border: none;">Cancelar</button>
+    </div>
+</dialog>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAWvV6MQtIGsmwfFh85aRG-fA-ijAF5BZQ",
+        authDomain: "controlfinanciero-46c57.firebaseapp.com",
+        projectId: "controlfinanciero-46c57",
+        storageBucket: "controlfinanciero-46c57.firebasestorage.app",
+        messagingSenderId: "168644739086",
+        appId: "1:168644739086:web:ffbf69fafb358e8d77fc5f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let movimientos = [];
+    let estadoPagos = {};
+
+    let idParaBorrar = null;
+    let mesActivoParaBorrar = null;
+
+    onSnapshot(collection(db, "movimientos"), (snapshot) => {
+        movimientos = [];
+        snapshot.forEach((doc) => {
+            movimientos.push({ id: doc.id, ...doc.data() });
+        });
+        renderizarMes();
+    });
+
+    onSnapshot(collection(db, "estadoPagos"), (snapshot) => {
+        estadoPagos = {};
+        snapshot.forEach((doc) => {
+            estadoPagos[doc.id] = doc.data().pagado;
+        });
+        renderizarMes();
+    });
+
+    window.toggleFrecuencia = function(tipo) {
+        const tipoSelect = document.getElementById(`${tipo}Tipo`).value;
+        document.getElementById(`${tipo}Frecuencia`).disabled = (tipoSelect === 'recurrente');
+    }
+
+    window.agregarMovimiento = async function(tipo) {
+        const concepto = document.getElementById(`${tipo}Concepto`).value;
+        const importe = parseFloat(document.getElementById(`${tipo}Importe`).value);
+        const modalidad = document.getElementById(`${tipo}Tipo`).value;
+        const frecuencia = document.getElementById(`${tipo}Frecuencia`).value;
+        const mesVista = parseInt(document.getElementById('mesVista').value);
+
+        if (!concepto || isNaN(importe)) return alert("Por favor, rellena concepto e importe.");
+
+        const idUnico = Date.now().toString();
+        await setDoc(doc(db, "movimientos", idUnico), {
+            tipo: tipo,
+            concepto: concepto,
+            importe: importe,
+            modalidad: modalidad,
+            frecuencia: modalidad === 'recurrente' ? '1' : frecuencia,
+            mesRegistro: mesVista,
+            mesesExcluidos: []
+        });
+
+        document.getElementById(`${tipo}Concepto`).value = '';
+        document.getElementById(`${tipo}Importe`).value = '';
+    }
+
+    window.solicitarBorrado = function(id) {
+        const mov = movimientos.find(m => m.id === id);
+        if (!mov) return;
+        idParaBorrar = id;
+        mesActivoParaBorrar = parseInt(document.getElementById('mesVista').value);
+        document.getElementById('deleteConceptText').innerText = `"${mov.concepto}"`;
+        document.getElementById('deleteDialog').showModal();
+    }
+
+    window.cerrarDialogo = function() {
+        document.getElementById('deleteDialog').close();
+    }
+
+    window.ejecutarBorrado = async function(modo) {
+        if (!idParaBorrar) return;
+        if (modo === 'completo') {
+            await deleteDoc(doc(db, "movimientos", idParaBorrar));
+            await deleteDoc(doc(db, "estadoPagos", `${mesActivoParaBorrar}-${idParaBorrar}`));
+        } else if (modo === 'mes') {
+            const mov = movimientos.find(m => m.id === idParaBorrar);
+            if (mov) {
+                let excluidos = mov.mesesExcluidos || [];
+                excluidos.push(mesActivoParaBorrar);
+                await updateDoc(doc(db, "movimientos", idParaBorrar), { mesesExcluidos: excluidos });
+            }
+        }
+        cerrarDialogo();
+    }
+
+    window.cambiarEstadoPago = async function(checkId) {
+        const valor = document.getElementById(checkId).checked;
+        await setDoc(doc(db, "estadoPagos", checkId), { pagado: valor });
+    }
+
+    function checkAplicaMes(mov, mesDestino) {
+        if (mov.mesesExcluidos && mov.mesesExcluidos.includes(mesDestino)) return false;
+        if (mov.modalidad === 'recurrente') return true;
+        const f = parseInt(mov.frecuencia);
+        const mesOrigen = mov.mesRegistro;
+        if (f === 1) return true;
+        if (f === 12) return mesOrigen === mesDestino;
+        if (f === 2) return (mesDestino % 2 === 0);
+        if (f === 3) return ((mesDestino - mesOrigen) % 3 === 0);
+        return false;
+    }
+
+    window.renderizarMes = function() {
+        const mesSeleccionado = parseInt(document.getElementById('mesVista').value);
+        const selectorMes = document.getElementById('mesVista');
+        document.getElementById('nombreMesTitulo').innerText = selectorMes.options[selectorMes.selectedIndex].text;
+
+        const tbody = document.getElementById('tablaMovimientos');
+        tbody.innerHTML = '';
+        let tIngresos = 0; let tGastos = 0;
+
+        const movimientosMes = movimientos.filter(m => checkAplicaMes(m, mesSeleccionado));
+
+        movimientosMes.forEach(m => {
+            const checkId = `${mesSeleccionado}-${m.id}`;
+            const estaPagado = estadoPagos[checkId] || false;
+            const tr = document.createElement('tr');
+            tr.id = 'fila-' + checkId;
+            if (estaPagado) tr.className = 'pagado';
+
+            const claseColor = m.tipo === 'ingreso' ? 'ingreso-row' : 'gasto-row';
+            const signo = m.tipo === 'ingreso' ? '+' : '-';
+
+            tr.innerHTML = `
+                <td><input type="checkbox" id="${checkId}" ${estaPagado ? 'checked' : ''} onchange="cambiarEstadoPago('${checkId}')"></td>
+                <td><strong>${m.concepto}</strong></td>
+                <td class="${claseColor}" style="text-align: right;">${signo}${m.importe.toFixed(2)} €</td>
+                <td style="text-align: center;"><button class="btn-delete" onclick="solicitarBorrado('${m.id}')">🗑️</button></td>
+            `;
+
+            if (m.tipo === 'ingreso') tIngresos += m.importe;
+            if (m.tipo === 'gasto') tGastos += m.importe;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('totalIngresos').innerText = `Ingresos: ${tIngresos.toFixed(2)} €`;
+        document.getElementById('totalGastos').innerText = `Gastos: ${tGastos.toFixed(2)} €`;
+        const neto = tIngresos - tGastos;
+        const netoEl = document.getElementById('balanceNeto');
+        netoEl.innerText = `Neto: ${neto.toFixed(2)} €`;
+        netoEl.style.color = neto >= 0 ? 'var(--success)' : 'var(--danger)';
+    }
+</script>
+</body>
+</html>
