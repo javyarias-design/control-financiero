@@ -367,6 +367,13 @@
 
         const movimientosMes = movimientos.filter(m => checkAplicaMes(m, mesSeleccionado));
 
+        // Ordenamos: Ingresos primero, Gastos después, y alfabéticamente dentro de cada tipo
+        movimientosMes.sort((a, b) => {
+            if (a.tipo === 'ingreso' && b.tipo === 'gasto') return -1;
+            if (a.tipo === 'gasto' && b.tipo === 'ingreso') return 1;
+            return a.concepto.localeCompare(b.concepto);
+        });
+
         movimientosMes.forEach(m => {
             const checkId = `${mesSeleccionado}-${m.id}`;
             const estaPagado = estadoPagos[checkId] || false;
